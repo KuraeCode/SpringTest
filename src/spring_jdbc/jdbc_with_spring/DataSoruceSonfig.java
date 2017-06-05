@@ -1,21 +1,26 @@
 package spring_jdbc.jdbc_with_spring;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.context.annotation.*;
+
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
+import spring_jdbc.jdbc_with_spring.core.ContactDao;
+import spring_jdbc.jdbc_with_spring.core.JdbcContactDao;
+
+
+import javax.sql.DataSource;
+
+import static org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType.H2;
 
 /**
  * Created by artmaster on 04.06.2017.
  */
 @Configuration
 @ComponentScan(value = "spring_jdbc.jdbc_with_spring")
-@PropertySource(value = {"classpath:spring_jdbc/jdbc_with_spring/jdbc.properties"}, ignoreResourceNotFound = true)
+//@PropertySource(value = {"classpath:spring_jdbc/jdbc_with_spring/jdbc.properties"}, ignoreResourceNotFound = true)
 public class DataSoruceSonfig {
 
-    @Value("${jdbc.driverClassName}")
+    /*@Value("${jdbc.driverClassName}")
     private String driverClassName;
 
     @Value("${jdbc.url}")
@@ -25,9 +30,9 @@ public class DataSoruceSonfig {
     private String userName;
 
     @Value("${jdbc.password}")
-    private String password;
+    private String password;*/
 
-    @Bean
+    /*@Bean
     public DriverManagerDataSource driverManager() {
         DriverManagerDataSource driverManagerDataSource = new DriverManagerDataSource();
         driverManagerDataSource.setDriverClassName(driverClassName);
@@ -35,5 +40,24 @@ public class DataSoruceSonfig {
         driverManagerDataSource.setUsername(userName);
         driverManagerDataSource.setPassword(password);
         return driverManagerDataSource;
+    }*/
+
+    @Bean
+    @Lazy
+    public DataSource dataSource() {
+        EmbeddedDatabaseBuilder builder = new EmbeddedDatabaseBuilder();
+        builder.setType(H2)
+                .addScript("classpath:spring_jdbc/jdbc_with_spring/schema.sql")
+                .addScript("classpath:spring_jdbc/jdbc_with_spring/test-data.sql");
+        return builder.build();
     }
+
+    @Bean
+    public ContactDao contactDao() {
+        JdbcContactDao contactDao = new JdbcContactDao();
+        contactDao.setDataSource(dataSource());
+        return contactDao;
+    }
+
+
 }
