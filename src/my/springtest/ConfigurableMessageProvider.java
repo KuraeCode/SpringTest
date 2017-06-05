@@ -6,13 +6,19 @@ import org.springframework.stereotype.Service;
 /**
  * Created by artmaster on 15.04.2017.
  */
-@Service("messageProvider")
+
 public class ConfigurableMessageProvider implements MessageProvider {
 
-    private String message;
+    private String message = "Default message";
 
-    @Autowired
+    public ConfigurableMessageProvider() {
+    }
+
     public ConfigurableMessageProvider(String message) {
+        this.message = message;
+    }
+
+    public void setMessage(String message) {
         this.message = message;
     }
 
