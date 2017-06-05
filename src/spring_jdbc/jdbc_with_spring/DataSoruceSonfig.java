@@ -1,6 +1,5 @@
 package spring_jdbc.jdbc_with_spring;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.*;
 
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
