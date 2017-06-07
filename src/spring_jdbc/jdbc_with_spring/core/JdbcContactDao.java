@@ -1,9 +1,15 @@
 package spring_jdbc.jdbc_with_spring.core;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.BeanCreationException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.object.MappingSqlQuery;
+import org.springframework.stereotype.Repository;
 
 import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
@@ -17,16 +23,22 @@ import java.util.Map;
 /**
  * Created by artmaster on 05.06.2017.
  */
+@Repository("contactDao")
 public class JdbcContactDao implements ContactDao {
 
+    private static final Log LOG = LogFactory.getLog(JdbcContactDao.class);
     private DataSource dataSource;
     private NamedParameterJdbcTemplate jdbcTemplate;
+    private SelectAllContact selectAllContact;
+    private SelectContactByFirstName selectContactByFirstName;
 
-    public void setDataSource(DataSource dataSource) {
+    @Autowired
+    public void setDataSource(@Qualifier("dataSource") DataSource dataSource) {
         this.dataSource = dataSource;
-
         NamedParameterJdbcTemplate jdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
         this.jdbcTemplate = jdbcTemplate;
+        selectAllContact = new SelectAllContact(dataSource);
+        selectContactByFirstName = new SelectContactByFirstName(dataSource);
     }
 
     @Override
@@ -40,14 +52,22 @@ public class JdbcContactDao implements ContactDao {
 
     @Override
     public List<Contact> findAll() {
-        return jdbcTemplate.query("select id, first_name, last_name, birth_date from contact", (resultSet, i) -> {
+        return selectAllContact.execute();
+        /* return jdbcTemplate.query("select id, first_name, last_name, birth_date from contact", (resultSet, i) -> {
             Contact contact = new Contact();
             contact.setId(resultSet.getLong("id"));
             contact.setFirstName(resultSet.getString("first_name"));
             contact.setLastName(resultSet.getString("last_name"));
             contact.setBirthDate(resultSet.getDate("birth_date"));
             return contact;
-        });
+        });*/
+    }
+
+    @Override
+    public List<Contact> findByFirstName(String firstName) {
+        Map<String, Object> paramMap = new HashMap<>();
+        paramMap.put("first_name", firstName);
+        return selectContactByFirstName.executeByNamedParam(paramMap);
     }
 
     @Override

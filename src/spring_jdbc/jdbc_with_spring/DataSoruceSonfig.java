@@ -3,6 +3,7 @@ package spring_jdbc.jdbc_with_spring;
 import org.springframework.context.annotation.*;
 
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
+import org.springframework.stereotype.Repository;
 import spring_jdbc.jdbc_with_spring.core.ContactDao;
 import spring_jdbc.jdbc_with_spring.core.JdbcContactDao;
 
@@ -51,12 +52,8 @@ public class DataSoruceSonfig {
         return builder.build();
     }
 
-    @Bean
-    public ContactDao contactDao() {
-        JdbcContactDao contactDao = new JdbcContactDao();
-        contactDao.setDataSource(dataSource());
-        return contactDao;
-    }
+
+
 
 
 }

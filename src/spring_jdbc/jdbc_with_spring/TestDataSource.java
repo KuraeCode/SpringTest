@@ -14,6 +14,6 @@ public class TestDataSource {
     public static void main(String[] args) {
         ApplicationContext context = new AnnotationConfigApplicationContext(DataSoruceSonfig.class);
         ContactDao dao = context.getBean("contactDao", ContactDao.class);
-        System.out.println(dao.findAllWithDetails());
+        System.out.println(dao.findByFirstName("Chris"));
     }
 }
