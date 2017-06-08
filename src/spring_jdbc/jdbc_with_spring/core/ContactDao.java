@@ -14,4 +14,6 @@ public interface ContactDao {
     List<Contact> findByFirstName(String firstName);
 
     List<Contact> findAllWithDetails();
+
+    public void update(Contact contact);
 }

@@ -5,16 +5,11 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.object.MappingSqlQuery;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,6 +26,7 @@ public class JdbcContactDao implements ContactDao {
     private NamedParameterJdbcTemplate jdbcTemplate;
     private SelectAllContact selectAllContact;
     private SelectContactByFirstName selectContactByFirstName;
+    private UpdateContact updateContact;
 
     @Autowired
     public void setDataSource(@Qualifier("dataSource") DataSource dataSource) {
@@ -39,6 +35,7 @@ public class JdbcContactDao implements ContactDao {
         this.jdbcTemplate = jdbcTemplate;
         selectAllContact = new SelectAllContact(dataSource);
         selectContactByFirstName = new SelectContactByFirstName(dataSource);
+        updateContact = new UpdateContact(dataSource);
     }
 
     @Override
@@ -104,6 +101,19 @@ public class JdbcContactDao implements ContactDao {
 
             return new ArrayList<>(map.values());
         }));
+    }
+
+    @Override
+    public void update(Contact contact) {
+        Map<String, Object> paramMap = new HashMap<>();
+        paramMap.put("first_name", contact.getFirstName());
+        paramMap.put("last_name", contact.getLastName());
+        paramMap.put("birth_date", contact.getBirthDate());
+        paramMap.put("id", contact.getId());
+
+        updateContact.updateByNamedParam(paramMap);
+
+        LOG.info("Existing contact updated with id: " + contact.getId());
     }
 
     @PostConstruct
