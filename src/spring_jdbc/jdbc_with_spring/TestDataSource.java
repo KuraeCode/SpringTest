@@ -18,11 +18,10 @@ public class TestDataSource {
         ApplicationContext context = new AnnotationConfigApplicationContext(DataSoruceSonfig.class);
         ContactDao dao = context.getBean("contactDao", ContactDao.class);
         Contact contact = new Contact();
-        contact.setId(1L);
-        contact.setFirstName("Chris");
-        contact.setLastName("John");
+        contact.setFirstName("Velikiy");
+        contact.setLastName("Kekar");
         contact.setBirthDate(new Date(new GregorianCalendar(1977, 10, 1).getTime().getTime()));
-        dao.update(contact);
+        dao.insert(contact);
         System.out.println(dao.findAll());
     }
 }

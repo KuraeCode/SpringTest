@@ -15,5 +15,9 @@ public interface ContactDao {
 
     List<Contact> findAllWithDetails();
 
-    public void update(Contact contact);
+    void update(Contact contact);
+
+    void insert(Contact contact);
+
+    void insertWithDetails(Contact contact);
 }

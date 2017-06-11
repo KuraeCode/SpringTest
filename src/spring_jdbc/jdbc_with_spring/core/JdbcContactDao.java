@@ -6,6 +6,8 @@ import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.PostConstruct;
@@ -27,6 +29,9 @@ public class JdbcContactDao implements ContactDao {
     private SelectAllContact selectAllContact;
     private SelectContactByFirstName selectContactByFirstName;
     private UpdateContact updateContact;
+    private InsertContact insertContact;
+    private InsertContactTelDetail insertContactTelDetail;
+
 
     @Autowired
     public void setDataSource(@Qualifier("dataSource") DataSource dataSource) {
@@ -36,6 +41,8 @@ public class JdbcContactDao implements ContactDao {
         selectAllContact = new SelectAllContact(dataSource);
         selectContactByFirstName = new SelectContactByFirstName(dataSource);
         updateContact = new UpdateContact(dataSource);
+        insertContact = new InsertContact(dataSource);
+
     }
 
     @Override
@@ -114,6 +121,50 @@ public class JdbcContactDao implements ContactDao {
         updateContact.updateByNamedParam(paramMap);
 
         LOG.info("Existing contact updated with id: " + contact.getId());
+    }
+
+    @Override
+    public void insert(Contact contact) {
+        Map<String, Object> paramMap = new HashMap<>();
+        paramMap.put("first_name", contact.getFirstName());
+        paramMap.put("last_name", contact.getLastName());
+        paramMap.put("birth_date", contact.getBirthDate());
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        insertContact.updateByNamedParam(paramMap, keyHolder);
+        contact.setId(keyHolder.getKey().longValue());
+        LOG.info("New Contact is " + contact);
+
+    }
+
+    @Override
+    public void insertWithDetails(Contact contact) {
+        insertContactTelDetail = new InsertContactTelDetail(dataSource);
+        Map<String, Object> paramMap = new HashMap<>();
+        paramMap.put("first_name", contact.getFirstName());
+        paramMap.put("last_name", contact.getLastName());
+        paramMap.put("birth_date", contact.getBirthDate());
+
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+
+        insertContact.updateByNamedParam(paramMap, keyHolder);
+
+        contact.setId(keyHolder.getKey().longValue());
+
+        LOG.info("New Contact insert with id: " + contact.getId());
+
+        List<ContactTelDetails> contactTelDetails = contact.getContactTelDetails();
+
+        if (contactTelDetails != null) {
+            contactTelDetails.forEach(contactTelDetails1 -> {
+                Map<String, Object> paramMapForDetails = new HashMap<>();
+                paramMap.put("contact_id", contact.getId());
+                paramMap.put("tel_type", contactTelDetails1.getTelType());
+                paramMap.put("tel_number", contactTelDetails1.getTelNumber());
+                insertContactTelDetail.updateByNamedParam(paramMapForDetails);
+            });
+        }
+        insertContactTelDetail.flush();
+
     }
 
     @PostConstruct
